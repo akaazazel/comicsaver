@@ -1,0 +1,6 @@
+requests
+beautifulsoup4
+fake-useragent
+cloudscraper
+selenium
+webdriver-manager
