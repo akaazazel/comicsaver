@@ -11,6 +11,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+dist/
+build/
 
 # Project Specific
 debug.html

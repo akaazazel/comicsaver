@@ -33,7 +33,7 @@ A robust, Selenium-based command-line tool designed to scrape and download high-
     ```
     (Or `pip install -e .` for editable mode)
 
-### From PyPI (not published yet)
+### From PyPI
 
 ```bash
 pip install comicsaver
