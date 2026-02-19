@@ -14,6 +14,7 @@ venv.bak/
 
 # Project Specific
 debug.html
+PUBLISHING.md
 
 # IDEs
 .vscode/

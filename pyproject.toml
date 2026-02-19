@@ -21,6 +21,8 @@ dependencies = [
     "webdriver-manager",
     "requests",
     "beautifulsoup4",
+    "tqdm",
+    "Pillow",
 ]
 
 [project.scripts]
