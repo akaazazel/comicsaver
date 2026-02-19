@@ -17,25 +17,39 @@ A robust, Selenium-based command-line tool designed to scrape and download high-
 
 ## Installation
 
-1.  **Clone the repository:**
+### From Source (Editable Mode)
+
+1.  Clone the repository:
 
     ```bash
-    git clone <your-repo-url>
+    git clone https://github.com/yourusername/comicsaver.git
     cd comicsaver
     ```
 
-2.  **Install Python dependencies:**
+2.  Install the package with pip:
     ```bash
-    pip install -r requirements.txt
+    pip install .
     ```
-    This will install `selenium`, `webdriver-manager`, `requests`, and `beautifulsoup4`.
+    (Or `pip install -e .` for editable mode)
+
+### From PyPI (not published yet)
+
+```bash
+pip install comicsaver
+```
 
 ## Usage
 
-Run the script from the root directory using Python:
+Once installed, use the `comicsaver` command directly:
 
 ```bash
-python src/scraper.py [URL] [OPTIONS]
+comicsaver [URL] [OPTIONS]
+```
+
+Or run via Python module:
+
+```bash
+python -m comicsaver.cli [URL] [OPTIONS]
 ```
 
 ### Arguments
@@ -49,13 +63,13 @@ python src/scraper.py [URL] [OPTIONS]
 **Download a specific issue:**
 
 ```bash
-python src/scraper.py "https://readcomiconline.li/Comic/JLA-Avengers/Issue-1" -o MyComics --headless
+comicsaver "https://readcomiconline.li/Comic/JLA-Avengers/Issue-1" -o MyComics --headless
 ```
 
 **Download with visible browser (for debugging):**
 
 ```bash
-python src/scraper.py "https://readcomiconline.li/Comic/JLA-Avengers/Issue-1"
+comicsaver "https://readcomiconline.li/Comic/JLA-Avengers/Issue-1"
 ```
 
 ## Project Structure
@@ -63,7 +77,10 @@ python src/scraper.py "https://readcomiconline.li/Comic/JLA-Avengers/Issue-1"
 ```
 comicsaver/
 ├── src/
-│   └── scraper.py       # Main scraper script logic
+│   └── comicsaver/
+│       ├── __init__.py
+│       └── cli.py       # Main scraper logic
+├── pyproject.toml       # Package configuration
 ├── requirements.txt     # Python dependencies
 ├── .gitignore           # Git ignore rules
 └── README.md            # Project documentation
