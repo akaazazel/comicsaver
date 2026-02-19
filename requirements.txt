@@ -5,3 +5,4 @@ cloudscraper
 selenium
 webdriver-manager
 tqdm
+Pillow

@@ -13,6 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+from PIL import Image
 
 def setup_driver(headless=False):
     """Sets up Chrome driver in headless mode."""
@@ -35,7 +36,7 @@ def download_image(url, folder, filename, session=None):
         # Check if file exists
         filepath = os.path.join(folder, filename)
         if os.path.exists(filepath):
-            print(f"File exists, skipping: {filepath}")
+            # print(f"File exists, skipping: {filepath}") # Quiet
             return True
 
         if session:
@@ -48,11 +49,50 @@ def download_image(url, folder, filename, session=None):
         with open(filepath, 'wb') as f:
             for chunk in response.iter_content(8192):
                 f.write(chunk)
-        print(f"Downloaded: {filepath}")
+        # print(f"Downloaded: {filepath}") # Quiet
         return True
     except Exception as e:
         print(f"Failed to download {url}: {e}")
         return False
+
+def create_pdf(image_folder, output_pdf_path):
+    """Combines images in a folder into a single PDF."""
+    try:
+        images = []
+        files = sorted(os.listdir(image_folder))
+        image_files = [f for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+
+        if not image_files:
+            print("No images found to create PDF.")
+            return
+
+        print(f"Generating PDF from {len(image_files)} images...")
+
+        # Open first image
+        first_image_path = os.path.join(image_folder, image_files[0])
+        first_image = Image.open(first_image_path).convert('RGB')
+        images.append(first_image)
+
+        # Open rest
+        other_images = []
+        for f in image_files[1:]:
+            img_path = os.path.join(image_folder, f)
+            try:
+                img = Image.open(img_path).convert('RGB')
+                other_images.append(img)
+            except Exception as e:
+                print(f"Warning: Could not open image {f} for PDF: {e}")
+
+        # Save PDF
+        if other_images:
+            first_image.save(output_pdf_path, save_all=True, append_images=other_images)
+        else:
+             first_image.save(output_pdf_path)
+
+        print(f"PDF created: {output_pdf_path}")
+
+    except Exception as e:
+        print(f"Failed to create PDF: {e}")
 
 def extract_issue_links(driver, comic_url):
     """Extracts all issue links from a comic landing page."""
@@ -98,7 +138,7 @@ def download_image_wrapper(args):
     """Wrapper for download_image to be used with ThreadPoolExecutor."""
     return download_image(*args)
 
-def scrape_issue(driver, issue_url, output_dir, max_threads=1):
+def scrape_issue(driver, issue_url, output_dir, max_threads=1, make_pdf=False):
     """Scrapes images from a single issue."""
     print(f"Processing issue: {issue_url}")
 
@@ -226,12 +266,28 @@ def scrape_issue(driver, issue_url, output_dir, max_threads=1):
         for task in download_tasks:
             download_image(*task)
 
+    if make_pdf:
+        # Create PDF in the Comic folder (parent of issue folder)
+        # e.g. Output/Comic/Issue/ -> Output/Comic/Comic - Issue.pdf
+        # But maybe just Issue directory is cleaner?
+        # User said "name of the comic and issue"
+        pdf_name = f"{comic_name} - {issue_name}.pdf"
+        # Sanitize filename
+        pdf_name = "".join([c for c in pdf_name if c.isalpha() or c.isdigit() or c==' ' or c=='-' or c=='.']).rstrip()
+
+        # Save in the comic folder, not inside the issue folder
+        comic_dir = os.path.dirname(save_dir)
+        pdf_path = os.path.join(comic_dir, pdf_name)
+
+        create_pdf(save_dir, pdf_path)
+
 def main():
     parser = argparse.ArgumentParser(description="Scrape comics from readcomiconline.li")
     parser.add_argument("url", help="URL of the comic or issue")
     parser.add_argument("-o", "--output", default="Comics", help="Output directory")
     parser.add_argument("--headless", action="store_true", help="Run in headless mode")
     parser.add_argument("-t", "--threads", type=int, default=1, help="Number of download threads (default: 1)")
+    parser.add_argument("--pdf", action="store_true", help="Combine images into a PDF")
 
     args = parser.parse_args()
 
@@ -256,13 +312,13 @@ def main():
             is_issue = True
 
         if is_issue:
-            scrape_issue(driver, url, output_dir, max_threads=threads)
+            scrape_issue(driver, url, output_dir, max_threads=threads, make_pdf=args.pdf)
         else:
             print("Detected Comic Page. Searching for issues...")
             issues = extract_issue_links(driver, url)
             print(f"Found {len(issues)} issues.")
             for issue in issues:
-                scrape_issue(driver, issue, output_dir, max_threads=threads)
+                scrape_issue(driver, issue, output_dir, max_threads=threads, make_pdf=args.pdf)
 
     except Exception as e:
         print(f"An error occurred: {e}")
