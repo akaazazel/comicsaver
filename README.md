@@ -8,6 +8,7 @@ A robust, Selenium-based command-line tool designed to scrape and download high-
 - **Smart Scrolling**: Implements an "incremental scrolling with patience" algorithm to ensure all lazy-loaded images are captured, even on slow connections.
 - **Organized Output**: Automatically creates a structured directory hierarchy: `Output/ComicName/IssueName/`.
 - **Flexible**: Scrape a single issue or an entire comic series (work in progress for full series recursion, currently optimized for single issues).
+- **PDF Generation**: Optionally convert downloaded images into a single, named PDF file.
 - **Headless Mode**: Runs silently in the background by default.
 
 ## Prerequisites
@@ -56,6 +57,8 @@ python -m comicsaver.cli [URL] [OPTIONS]
 
 - `URL`: The URL of the comic issue or main page (e.g., `https://readcomiconline.li/Comic/JLA-Avengers/Issue-1`).
 - `-o`, `--output`: (Optional) The directory to save downloaded comics. Defaults to `Comics`.
+- `-t`, `--threads`: (Optional) Number of concurrent download threads (default: 1).
+- `--pdf`: (Optional) Combine downloaded images into a single PDF file (named `Comic - Issue.pdf`).
 - `--headless`: (Optional) Run the browser in headless mode (no UI). Useful for background tasks.
 
 ### Examples
@@ -63,7 +66,7 @@ python -m comicsaver.cli [URL] [OPTIONS]
 **Download a specific issue:**
 
 ```bash
-comicsaver "https://readcomiconline.li/Comic/JLA-Avengers/Issue-1" -o MyComics --headless
+comicsaver "https://readcomiconline.li/Comic/JLA-Avengers/Issue-1" -o MyComics --headless --pdf -t 5
 ```
 
 **Download with visible browser (for debugging):**
@@ -90,3 +93,7 @@ comicsaver/
 
 - **"No images found"**: Ensure your internet connection is stable. The script waits for images to load, but extremely slow connections might timeout.
 - **Chrome driver errors**: The `webdriver-manager` should handle driver installation automatically. If it fails, try upgrading it: `pip install --upgrade webdriver-manager`.
+
+## AI Development
+
+This project was developed with the assistance of AI. The core logic, including Selenium handling, lazy loading algorithms, and PDF generation features, was implemented through collaboration with an AI coding assistant. The AI helped in debugging, optimizing, and structuring the codebase for better maintainability and performance.
