@@ -103,9 +103,42 @@ def scrape_issue(driver, issue_url, output_dir):
 
     driver.get(all_pages_url)
 
+
+
+    # Scroll down the page incrementally to trigger lazy loading
+    print("Scrolling to load all images...")
+
+    last_height = driver.execute_script("return document.body.scrollHeight")
+
+    scroll_attempts = 0
+    max_attempts = 150 # Safety break
+
+    while scroll_attempts < max_attempts:
+        # Scroll down by window height
+        driver.execute_script("window.scrollBy(0, window.innerHeight);")
+        time.sleep(1) # Wait for load
+
+        # Check if we reached the bottom
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        current_scroll = driver.execute_script("return window.pageYOffset + window.innerHeight")
+
+        if current_scroll >= new_height:
+             # Try to wait a bit more to see if content expands
+             time.sleep(2)
+             new_height = driver.execute_script("return document.body.scrollHeight")
+             if current_scroll >= new_height:
+                 print("Reached bottom of page.")
+                 break
+
+
+
+        last_height = new_height
+        scroll_attempts += 1
+        print(f"Scrolled {scroll_attempts}/{max_attempts} times...")
+
     # Wait for images to load.
     # Logic: Wait for div#divImage img to have a src that is NOT blank.gif or loading.gif
-    print("Waiting for images to load...")
+    print("Waiting for images to settle...")
     try:
         WebDriverWait(driver, 30).until(
             lambda d: len(d.find_elements(By.CSS_SELECTOR, "div#divImage img[src*='blogspot']")) > 0 or
@@ -145,6 +178,7 @@ def scrape_issue(driver, issue_url, output_dir):
     # Extract images from div#divImage
     div_image = soup.find('div', id='divImage')
     if div_image:
+        # User specified images are inside p tags, but generic find_all('img') inside div is robust
         imgs = div_image.find_all('img')
         for img in imgs:
             src = img.get('src')
@@ -166,8 +200,6 @@ def scrape_issue(driver, issue_url, output_dir):
 
         filename = f"{i+1:03d}.{ext}"
         download_image(img_url, save_dir, filename, session)
-        # No sleep needed really with requests unless rate limited, but be polite
-        # time.sleep(0.1)
 
 def main():
     parser = argparse.ArgumentParser(description="Scrape comics from readcomiconline.li")
