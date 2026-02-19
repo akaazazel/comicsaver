@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+src/comicsaver/__init__.py
+src/comicsaver/cli.py
+src/comicsaver.egg-info/PKG-INFO
+src/comicsaver.egg-info/SOURCES.txt
+src/comicsaver.egg-info/dependency_links.txt
+src/comicsaver.egg-info/entry_points.txt
+src/comicsaver.egg-info/requires.txt
+src/comicsaver.egg-info/top_level.txt

@@ -1,0 +1,2 @@
+[console_scripts]
+comicsaver = comicsaver.cli:main
