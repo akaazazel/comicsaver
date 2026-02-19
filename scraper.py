@@ -104,7 +104,6 @@ def scrape_issue(driver, issue_url, output_dir):
     driver.get(all_pages_url)
 
 
-
     # Scroll down the page incrementally to trigger lazy loading
     print("Scrolling to load all images...")
 
@@ -112,25 +111,33 @@ def scrape_issue(driver, issue_url, output_dir):
 
     scroll_attempts = 0
     max_attempts = 150 # Safety break
+    consecutive_no_change = 0
+    max_no_change = 3
 
     while scroll_attempts < max_attempts:
         # Scroll down by window height
         driver.execute_script("window.scrollBy(0, window.innerHeight);")
         time.sleep(1) # Wait for load
 
-        # Check if we reached the bottom
+        # Check heights
         new_height = driver.execute_script("return document.body.scrollHeight")
         current_scroll = driver.execute_script("return window.pageYOffset + window.innerHeight")
 
-        if current_scroll >= new_height:
-             # Try to wait a bit more to see if content expands
+        if new_height == last_height and current_scroll >= new_height:
+             consecutive_no_change += 1
+             print(f"  Bottom detected? Waiting... ({consecutive_no_change}/{max_no_change})")
              time.sleep(2)
+
+             # Re-check height
              new_height = driver.execute_script("return document.body.scrollHeight")
-             if current_scroll >= new_height:
-                 print("Reached bottom of page.")
-                 break
-
-
+             if new_height == last_height:
+                 if consecutive_no_change >= max_no_change:
+                     print("Reached bottom of page (confirmed).")
+                     break
+             else:
+                 consecutive_no_change = 0 # It grew!
+        else:
+             consecutive_no_change = 0
 
         last_height = new_height
         scroll_attempts += 1
